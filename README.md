@@ -1,2 +1,2 @@
 # spring-boot-totp-google
-Spring Boot Eith Google OTP Authentication
+Spring Boot With Google OTP Authentication
