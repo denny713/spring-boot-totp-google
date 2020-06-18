@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: TOTP Google
+  datasource:
+    url: jdbc:mysql://localhost:3306/otp_google?zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8
+    username: root
+    password: p@ssw0rd
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+server:
+  port: 6001
