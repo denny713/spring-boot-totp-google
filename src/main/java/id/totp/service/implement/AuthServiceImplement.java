@@ -16,4 +16,9 @@ public class AuthServiceImplement implements AuthService {
     public OtpAuth getByUsername(String username) {
         return authRepository.findByUsername(username);
     }
+
+    @Override
+    public void saveAuth(OtpAuth auth) {
+        authRepository.save(auth);
+    }
 }

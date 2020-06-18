@@ -1,7 +1,7 @@
 package id.totp.controller;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
-import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import id.totp.annotation.Route;
 import id.totp.entity.OtpAuth;
 import id.totp.function.AuthFunction;
 import id.totp.model.OtpLogin;
@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 
 @RestController
 @SuppressWarnings("serial")
-@RequestMapping("/api/otp")
+@Route("/api/otp")
 public class OtpController {
 
     @Autowired
@@ -37,6 +37,11 @@ public class OtpController {
         try {
             String key = authFunction.generateKey();
             String authLink = authFunction.generateKeyUri(account, "OTP", key);
+            OtpAuth auth = new OtpAuth();
+            auth.setUsername(account);
+            auth.setKey(key);
+            auth.setUri(authLink);
+            authService.saveAuth(auth);
             response.setResult(true);
             response.setMessage("Success\n URL : " + authLink + "\n Key : " + key);
         } catch (Exception f) {

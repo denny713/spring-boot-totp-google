@@ -7,5 +7,7 @@ import javax.transaction.Transactional;
 @Transactional
 public interface AuthService {
 
-    public OtpAuth getByUsername(String usernames);
+    public OtpAuth getByUsername(String username);
+
+    public void saveAuth(OtpAuth auth);
 }

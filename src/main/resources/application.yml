@@ -7,7 +7,9 @@ spring:
     password: p@ssw0rd
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 server:
   port: 6001
+  servlet:
+    context-path: /
