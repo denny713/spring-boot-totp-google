@@ -1,6 +1,9 @@
 package id.totp.controller;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorConfig;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import id.totp.entity.OtpAuth;
 import id.totp.model.OtpCredential;
 import id.totp.model.Result;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 
 @RestController
 public class OtpController {
@@ -21,6 +25,11 @@ public class OtpController {
 
     private static Boolean isNumericType(String secret) {
         return secret.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    private static GoogleAuthenticatorKey setUp() {
+        GoogleAuthenticatorConfig config = new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder().build();
+        return new GoogleAuthenticatorKey.Builder("secretKey").setConfig(config).setVerificationCode(123456).setScratchCodes(new ArrayList<Integer>()).build();
     }
 
     @GetMapping("/init")
@@ -72,5 +81,19 @@ public class OtpController {
             }
         }
         return response;
+    }
+
+    @GetMapping("/qr")
+    @ResponseBody
+    public String getQrCode(@Valid @RequestBody String account) {
+        GoogleAuthenticatorKey credential = setUp();
+        return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("OTP", account, credential);
+    }
+
+    @GetMapping("/url")
+    @ResponseBody
+    public String getUrl(@Valid @RequestBody String account) {
+        GoogleAuthenticatorKey credential = setUp();
+        return GoogleAuthenticatorQRGenerator.getOtpAuthURL("OTP", account, credential);
     }
 }
