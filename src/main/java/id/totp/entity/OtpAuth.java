@@ -19,6 +19,6 @@ public class OtpAuth {
     @Column(name = "uri")
     private String uri;
 
-    @Column(name = "key")
-    private String key;
+    @Column(name = "secret")
+    private String secret;
 }

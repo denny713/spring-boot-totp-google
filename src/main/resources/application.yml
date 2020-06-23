@@ -5,11 +5,14 @@ spring:
     url: jdbc:mysql://localhost:3306/otp_google?zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8
     username: root
     password: p@ssw0rd
+  data:
+    rest:
+      base-path: /rest/api
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 server:
-  port: 6001
+  port: 8070
   servlet:
     context-path: /

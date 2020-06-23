@@ -3,8 +3,8 @@ package id.totp.model;
 import lombok.Data;
 
 @Data
-public class Response {
+public class Result {
 
-    private boolean result;
+    private Boolean result;
     private String message;
 }

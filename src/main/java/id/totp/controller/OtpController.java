@@ -1,86 +1,75 @@
 package id.totp.controller;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
-import id.totp.annotation.Route;
 import id.totp.entity.OtpAuth;
-import id.totp.function.AuthFunction;
-import id.totp.model.OtpLogin;
-import id.totp.model.Response;
+import id.totp.model.OtpCredential;
+import id.totp.model.Result;
+import id.totp.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-import id.totp.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URISyntaxException;
-
 @RestController
-@SuppressWarnings("serial")
-@Route("/api/otp")
 public class OtpController {
-
-    @Autowired
-    private AuthFunction authFunction;
 
     @Autowired
     private AuthService authService;
 
-    private static Boolean isNumeric(String secret) {
+    private static Boolean isNumericType(String secret) {
         return secret.matches("-?\\d+(\\.\\d+)?");
     }
 
     @GetMapping("/init")
     @ResponseBody
-    public Response initialOtp(@Valid @RequestParam String account) throws URISyntaxException {
-        Response response = new Response();
+    public Result initialOtp(@Valid @RequestBody String account) {
+        Result result = new Result();
         try {
-            String key = authFunction.generateKey();
-            String authLink = authFunction.generateKeyUri(account, "OTP", key);
+            String key = authService.generateAuthKey();
+            String uri = authService.generateKeyUri(account, "OTP", key);
             OtpAuth auth = new OtpAuth();
             auth.setUsername(account);
-            auth.setKey(key);
-            auth.setUri(authLink);
+            auth.setSecret(key);
+            auth.setUri(uri);
             authService.saveAuth(auth);
-            response.setResult(true);
-            response.setMessage("Success\n URL : " + authLink + "\n Key : " + key);
-        } catch (Exception f) {
-            response.setResult(false);
-            response.setMessage(f.getMessage());
+            result.setResult(true);
+            result.setMessage("Save Success With Key " + key);
+        } catch (Exception g) {
+            result.setResult(false);
+            result.setMessage(g.getMessage());
         }
-        return response;
+        return result;
     }
 
     @GetMapping("/verify")
     @ResponseBody
-    public Response verifyCode(@Valid @RequestParam OtpLogin otp) {
-        Response response = new Response();
-        try {
-            GoogleAuthenticator auth = new GoogleAuthenticator();
-            OtpAuth totp = authService.getByUsername(otp.getAccount());
-            if (totp == null) {
+    public Result verifyCode(@Valid @RequestBody OtpCredential otp) {
+        Result response = new Result();
+        GoogleAuthenticator auth = new GoogleAuthenticator();
+        OtpAuth userAuth = authService.getByUsername(otp.getUsername());
+        if (userAuth == null) {
+            response.setResult(false);
+            response.setMessage("User " + otp.getUsername() + " Not Found");
+        } else {
+            if (Boolean.FALSE.equals(isNumericType(otp.getKey()))) {
                 response.setResult(false);
-                response.setMessage("Account " + otp.getAccount() + " Not Found");
+                response.setMessage("Secret Code Must Be Numeric Type");
             } else {
-                if (Boolean.FALSE.equals(isNumeric(otp.getKey()))) {
-                    response.setResult(false);
-                    response.setMessage("Secret Code Must Be Numeric Type");
+                String key = userAuth.getSecret();
+                Integer totp = Integer.valueOf(otp.getKey().equals("") ? "-1" : otp.getKey());
+                Boolean unused = authService.isUsedKey(totp, 3);
+                Boolean matches = auth.authorize(key, totp);
+                if (unused && matches) {
+                    response.setResult(true);
+                    response.setMessage("Valid Key");
                 } else {
-                    Integer keys = Integer.valueOf(otp.getKey().equals("") ? "-1" : otp.getKey());
-                    Boolean unused = authFunction.isUsedKey(keys, 3);
-                    Boolean matches = auth.authorize(totp.getKey(), keys);
-                    if (unused && matches) {
-                        response.setResult(true);
-                        response.setMessage("Key Is Valid");
-                    } else {
-                        response.setResult(false);
-                        response.setMessage("Key Is Invalid");
-                    }
+                    response.setResult(false);
+                    response.setMessage("Invalid Key");
                 }
             }
-        } catch (Exception f) {
-            response.setResult(false);
-            response.setMessage(f.getMessage());
         }
         return response;
     }

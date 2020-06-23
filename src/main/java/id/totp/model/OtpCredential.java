@@ -3,8 +3,8 @@ package id.totp.model;
 import lombok.Data;
 
 @Data
-public class OtpLogin {
+public class OtpCredential {
 
-    private String account;
+    private String username;
     private String key;
 }
